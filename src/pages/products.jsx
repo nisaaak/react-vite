@@ -1,14 +1,40 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Button from "../components/Elements/Button"
 import CardProduct from "../components/Fragments/CardProduct"
 
 const ProductPage = () => {
     const [cart, setCart] = useState([
-        {
-            id: 1,
-            qty: 1,
-        }
+        // {
+        //     id: 1,
+        //     qty: 1,
+        // }
     ])
+    const [totalPrice, setTotalPrice] = useState(0)
+
+    // useref => tdk langsung ter render perubahan nya
+    // memanipulasi dom spt Document.getElementById()
+    const cartRef = useRef(JSON.parse(localStorage.getItem('cart')) || [])
+
+    const handleAddToCartRef = (id) => {
+        cartRef.current = [...cartRef.current, { id, qty: 1 }]
+        localStorage.setItem('cart', JSON.stringify(cartRef.current))
+    }
+    // --------------------------------------------------------------------
+
+    useEffect(() => {
+        setCart(JSON.parse(localStorage.getItem('cart')) || [])
+    }, [])
+
+    useEffect(() => {
+        if (cart.length > 0) {
+            const sum = cart.reduce((acc, item) => {
+                const product = products.find((product) => product.id === item.id)
+                return acc + product.price * item.qty
+            }, 0)
+            setTotalPrice(sum)
+            localStorage.setItem('cart', JSON.stringify(cart))
+        }
+    }, [cart])
 
     const products = [
         {
@@ -66,6 +92,16 @@ const ProductPage = () => {
         }
     }
 
+    const totalPriceRef = useRef(null)
+
+    useEffect(() => {
+        if (cart.length > 0) {
+            totalPriceRef.current.style.display = 'table-row'
+        } else {
+            totalPriceRef.current.style.display = 'none'
+        }
+    }, [cart])
+
     return (
         <>
             <div className="flex justify-end h-20 bg-blue-600 text-white items-center px-10">
@@ -115,6 +151,16 @@ const ProductPage = () => {
                                     </tr>
                                 )
                             })}
+                            <tr ref={totalPriceRef}>
+                                <td colSpan={3}>
+                                    <b>Total Price</b>
+                                </td>
+                                <td>
+                                    <b>
+                                        Rp{' '}{totalPrice.toLocaleString('id-ID', { styles: 'currency', currency: 'IDR' })}
+                                    </b>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
