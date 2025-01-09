@@ -2,11 +2,13 @@ import { useEffect, useRef, useState } from "react"
 import Button from "../components/Elements/Button"
 import CardProduct from "../components/Fragments/CardProduct"
 import { getProducts } from "../services/product.services"
+import { getUsername } from "../services/auth.services"
 
 const ProductPage = () => {
     const [cart, setCart] = useState([]) //{id:1,qty:1}
     const [totalPrice, setTotalPrice] = useState(0)
     const [products, setProducts] = useState([])
+    const [username, setUsername] = useState('')
 
     // useref => tdk langsung ter render perubahan nya
     // memanipulasi dom spt Document.getElementById()
@@ -20,6 +22,16 @@ const ProductPage = () => {
 
     useEffect(() => {
         setCart(JSON.parse(localStorage.getItem('cart')) || [])
+    }, [])
+
+    useEffect(() => {
+        const token = localStorage.getItem('token')
+        if (token) {
+            setUsername(getUsername(token))
+        } else {
+            window.location.href = "/login"
+        }
+
     }, [])
 
     useEffect(() => {
@@ -40,11 +52,8 @@ const ProductPage = () => {
         }
     }, [cart, products])
 
-    const email = localStorage.getItem('email')
-
     const handleLogout = () => {
-        localStorage.removeItem('email')
-        localStorage.removeItem('password')
+        localStorage.removeItem('token')
         window.location.href = '/login'
     }
 
@@ -71,7 +80,7 @@ const ProductPage = () => {
     return (
         <>
             <div className="flex justify-end h-20 bg-blue-600 text-white items-center px-10">
-                {email}
+                {username}
                 <Button
                     classname="ml-5 bg-black"
                     onClick={handleLogout}>
